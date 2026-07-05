@@ -3,6 +3,8 @@ import { generateText, Output } from "ai";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+// GOOGLE_GENERATIVE_AI_API_KEY=AQ.Ab8RN6KX84MaqWPk9g5ot51c6B2O66w2Od1Q8VnnlM24_8vXrg
+
 export async function POST(request: Request) {
   try {
     if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
