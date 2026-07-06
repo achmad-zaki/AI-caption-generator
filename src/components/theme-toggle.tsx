@@ -21,8 +21,9 @@ export function ThemeToggle() {
 
   return (
     <Button
-      size="icon-sm"
+      size="icon-lg"
       variant="outline"
+      className="rounded-full"
       onClick={() => setTheme(isDark ? "light" : "dark")}
     >
       {isDark ? <RiSunLine className="size-4" /> : <RiMoonLine className="size-4" />}

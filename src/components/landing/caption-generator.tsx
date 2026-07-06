@@ -6,7 +6,7 @@ import {
   RiCheckLine,
   RiFileCopyLine
 } from "@remixicon/react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { BiAddToQueue } from "react-icons/bi";
 import { BsArrowRightShort } from "react-icons/bs";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
@@ -28,6 +28,17 @@ export function CaptionGenerator() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<GenerateResult | null>(null);
   const [copied, setCopied] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!imageFile) {
+      setPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(imageFile);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [imageFile]);
 
   const handleFile = useCallback((file: File | null) => {
     setImageFile(file);
@@ -125,10 +136,10 @@ export function CaptionGenerator() {
             onDragLeave={() => setIsDragging(false)}
             onDrop={onDrop}
             className={cn(
-              "flex min-h-[220px] cursor-pointer flex-col items-center justify-center gap-4 px-6 py-12 transition-colors md:min-h-[260px]",
+              "relative flex min-h-[220px] cursor-pointer flex-col items-center justify-center gap-4 overflow-hidden px-6 py-12 transition-colors md:min-h-[260px]",
               "rounded-2xl border border-dashed bg-muted/40",
               "border-zinc-400 dark:border-zinc-700",
-              "hover:border-primary hover:bg-primary/10",
+              !previewUrl && "hover:border-primary hover:bg-primary/10",
               isDragging && "bg-muted/70"
             )}
           >
@@ -139,15 +150,35 @@ export function CaptionGenerator() {
               className="sr-only"
               onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
             />
-            <div className="flex flex-col items-center justify-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" width="50" height="50" fill="none"><path fill="currentColor" fillRule="evenodd" d="m9.91 16.88 3.136-.553a4.375 4.375 0 0 0 3.549-5.068l-1.15-6.519.774.137c1.7.3 2.835 1.92 2.535 3.62l-1.158 6.566a3.125 3.125 0 0 1-3.62 2.534z" clipRule="evenodd"></path><rect width="11.667" height="11.667" x="1.25" y="4.318" stroke="currentColor" strokeWidth="1.25" rx="2.5" transform="rotate(-10 1.25 4.318)"></rect><path fill="currentColor" d="M6.976 6.489a.417.417 0 0 1 .744-.131l.84 1.198c.056.08.138.138.233.164l1.414.38c.341.09.42.54.13.743l-1.198.84a.42.42 0 0 0-.163.233l-.38 1.414a.417.417 0 0 1-.743.13l-.84-1.198a.42.42 0 0 0-.234-.163l-1.413-.38a.417.417 0 0 1-.131-.743l1.198-.84a.42.42 0 0 0 .164-.233z"></path></svg>
-              <p className="text-sm font-medium text-foreground/80">
-                Masukkan gambar konten
-              </p>
-            </div>
+            {previewUrl ? (
+              <>
+                <img
+                  src={previewUrl}
+                  alt="Preview gambar"
+                  className="absolute inset-0 size-full object-contain p-4"
+                />
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/60 opacity-0 transition-opacity hover:opacity-100">
+                  <p className="text-sm font-medium text-foreground">
+                    Klik untuk ganti gambar
+                  </p>
+                  {imageFile && (
+                    <p className="max-w-[80%] truncate text-xs text-muted-foreground">
+                      {imageFile.name}
+                    </p>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="relative flex flex-col items-center justify-center gap-2">
+                <svg className="text-muted-foreground" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" width="50" height="50" fill="none"><path fill="currentColor" fillRule="evenodd" d="m9.91 16.88 3.136-.553a4.375 4.375 0 0 0 3.549-5.068l-1.15-6.519.774.137c1.7.3 2.835 1.92 2.535 3.62l-1.158 6.566a3.125 3.125 0 0 1-3.62 2.534z" clipRule="evenodd"></path><rect width="11.667" height="11.667" x="1.25" y="4.318" stroke="currentColor" strokeWidth="1.25" rx="2.5" transform="rotate(-10 1.25 4.318)"></rect><path fill="currentColor" d="M6.976 6.489a.417.417 0 0 1 .744-.131l.84 1.198c.056.08.138.138.233.164l1.414.38c.341.09.42.54.13.743l-1.198.84a.42.42 0 0 0-.163.233l-.38 1.414a.417.417 0 0 1-.743.13l-.84-1.198a.42.42 0 0 0-.234-.163l-1.413-.38a.417.417 0 0 1-.131-.743l1.198-.84a.42.42 0 0 0 .164-.233z"></path></svg>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Masukkan gambar konten
+                </p>
+              </div>
+            )}
           </div>
 
-          <div className="flex flex-col gap-2 mt-3">
+          <div className="flex flex-col gap-3 mt-3">
             {showStyleInput && (
               <div>
                 <Textarea
@@ -163,21 +194,21 @@ export function CaptionGenerator() {
 
             <div className="flex items-center justify-between gap-2">
               <Button
-                size="xs"
+                size="sm"
                 variant="secondary"
                 type="button"
                 onClick={() => setShowStyleInput((prev) => !prev)}
-                className="rounded-full text-[10px] tracking-wide py-4 border border-border"
+                className="rounded-full text-[10px] py-3.5 border border-border"
               >
-                <BiAddToQueue className="size-4" />
+                <BiAddToQueue />
                 Tambah keterangan
               </Button>
 
               <Button
                 type="submit"
-                size="xs"
+                size="sm"
                 disabled={!imageFile || loading}
-                className="rounded-full font-normal text-[10px] py-4"
+                className="rounded-full py-3.5 text-[10px]"
               >
                 {loading ? "Memproses..." : "Buat Caption"}
                 <BsArrowRightShort className="size-4" />
@@ -196,10 +227,8 @@ export function CaptionGenerator() {
         )}
       </form>
 
-
-
       {result && (
-        <div className="mx-auto mt-6 max-w-2xl rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8">
+        <div className="mx-auto mt-6 max-w-2xl rounded-3xl border border-border bg-card p-6 md:p-8">
           <div className="mb-4 flex items-center justify-between gap-4">
             <h3 className="text-sm font-semibold text-foreground">Caption Anda</h3>
             <button
@@ -227,11 +256,11 @@ export function CaptionGenerator() {
             ))}
           </div>
 
-          <div className="mt-5 flex flex-wrap gap-2">
+          <div className="mt-14 flex flex-wrap gap-2.5">
             {result.hashtags.map((tag) => (
               <span
                 key={tag}
-                className="rounded-full bg-sky-50 px-3 py-1 text-xs font-medium text-sky-700 dark:bg-sky-950/50 dark:text-sky-400"
+                className="rounded-full bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400"
               >
                 {tag}
               </span>

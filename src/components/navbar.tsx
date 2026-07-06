@@ -20,7 +20,7 @@ export function Navbar() {
   return (
     <>
       <header className="fixed top-0 z-50 w-full px-4 pt-4 md:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-6xl items-center justify-between rounded-3xl border border-border
+        <div className="mx-auto flex max-w-6xl items-center justify-between rounded-full border border-border
          bg-background/70 px-4 py-3 shadow-lg backdrop-blur-md md:px-6">
           <Link href="/">
             <div className="flex items-center gap-1.5">
@@ -49,32 +49,27 @@ export function Navbar() {
             ))}
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
             <ThemeToggle />
 
-            <Link
-              href="/auth/login"
-              className={buttonVariants({
-                variant: "default",
-                size: "sm",
-                className: "hidden! md:inline-flex!",
-              })}
-            >
-              Masuk
-            </Link>
+            <Button asChild className="rounded-full hidden md:inline-flex px-4" size="lg">
+              <Link
+                href="/auth/login"
+              >
+                Masuk
+              </Link>
+            </Button>
 
             <Button
-              size="icon-sm"
+              size="icon-lg"
               variant="outline"
-              aria-label={mobileOpen ? "Tutup menu" : "Buka menu"}
-              aria-expanded={mobileOpen}
-              className="md:hidden"
+              className="md:hidden rounded-full"
               onClick={() => setMobileOpen((prev) => !prev)}
             >
               {mobileOpen ? (
-                <RiCloseLine className="size-5" />
+                <RiCloseLine className="size-4" />
               ) : (
-                <RiMenuLine className="size-5" />
+                <RiMenuLine className="size-4" />
               )}
             </Button>
           </div>

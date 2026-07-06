@@ -2,9 +2,9 @@ import { CaptionGenerator } from "./caption-generator";
 
 export function Hero() {
   return (
-    <section className="hero-mesh relative isolate overflow-hidden px-4 pb-16 pt-32 md:px-6 md:pb-24 md:pt-36 lg:px-8">
+    <section className="relative isolate overflow-hidden px-4 pb-16 pt-32 md:px-6 md:pb-24 md:pt-36 lg:px-8">
       <div className="relative z-10 mx-auto max-w-4xl text-center">
-        <h1 className="font-serif-display text-4xl leading-tight tracking-tight text-foreground md:text-5xl lg:text-6xl font-medium">
+        <h1 className="font-heading text-4xl leading-tight tracking-tight text-foreground md:text-5xl lg:text-6xl font-medium">
           AI yang menulis caption
           <br className="hidden sm:block" />
           {" "}seperti copywriter profesional.
