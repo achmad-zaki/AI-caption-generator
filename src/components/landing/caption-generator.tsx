@@ -11,6 +11,7 @@ import { BiAddToQueue } from "react-icons/bi";
 import { BsArrowRightShort } from "react-icons/bs";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { Button } from "../ui/button";
+import { Spinner } from "../ui/spinner";
 import { Textarea } from "../ui/textarea";
 
 type GenerateResult = {
@@ -210,8 +211,9 @@ export function CaptionGenerator() {
                 disabled={!imageFile || loading}
                 className="rounded-full py-3.5 text-[10px]"
               >
+                {loading && <Spinner />}
                 {loading ? "Memproses..." : "Buat Caption"}
-                <BsArrowRightShort className="size-4" />
+                {!loading && <BsArrowRightShort className="size-4" />}
               </Button>
             </div>
           </div>
