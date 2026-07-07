@@ -11,7 +11,8 @@
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
-    "auth:generate": "npx auth@latest generate --yes"
+    "auth:generate": "npx auth@latest generate --yes",
+    "set-superadmin": "npx tsx prisma/seed.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.8",

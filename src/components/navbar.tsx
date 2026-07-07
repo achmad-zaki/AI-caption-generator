@@ -1,5 +1,6 @@
 "use client";
 
+import { authClient } from "@/lib/auth-client";
 import { RiCloseLine, RiMenuLine } from "@remixicon/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -7,6 +8,7 @@ import { useState } from "react";
 import DialogAuth from "./landing/dialog-auth";
 import { ThemeToggle } from "./theme-toggle";
 import { Button, buttonVariants } from "./ui/button";
+import { UserMenu } from "./user-menu";
 
 const navLinks = [
   { label: "Fitur", href: "#fitur" },
@@ -17,6 +19,7 @@ const navLinks = [
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { data: session } = authClient.useSession();
 
   return (
     <>
@@ -53,7 +56,7 @@ export function Navbar() {
           <div className="flex items-center gap-1.5">
             <ThemeToggle />
 
-            <DialogAuth />
+            <UserMenu />
 
             <Button
               size="icon-lg"
@@ -93,23 +96,30 @@ export function Navbar() {
                 </Link>
               ))}
               <Link
-                href="/auth/login"
-                className={buttonVariants({
-                  variant: "default",
-                  size: "sm",
-                  className: "mt-2 w-full",
-                })}
-                onClick={() => setMobileOpen(false)}
-              >
-                Masuk
-              </Link>
-              <Link
                 href="#generator"
                 className="mt-1 rounded-full border border-foreground px-4 py-3 text-center text-sm font-medium text-foreground transition-colors hover:bg-muted"
                 onClick={() => setMobileOpen(false)}
               >
                 Mulai gratis
               </Link>
+              {!session && (
+                <div className="mt-2" onClick={() => setMobileOpen(false)}>
+                  <DialogAuth triggerClassName="w-full rounded-full" />
+                </div>
+              )}
+              {session?.user.role === "superadmin" && (
+                <Link
+                  href="/admin"
+                  className={buttonVariants({
+                    variant: "outline",
+                    size: "sm",
+                    className: "mt-2 w-full rounded-full",
+                  })}
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Panel Admin
+                </Link>
+              )}
             </nav>
           </div>
         </>

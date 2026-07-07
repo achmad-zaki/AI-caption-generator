@@ -1,7 +1,9 @@
 import { google } from "@ai-sdk/google";
 import { generateText, Output } from "ai";
+import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { auth } from "@/lib/auth";
 
 const captionSchema = z.object({
   isRelevant: z.boolean(),
@@ -11,6 +13,14 @@ const captionSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) {
+      return NextResponse.json({ error: "Anda harus masuk terlebih dahulu" }, { status: 401 });
+    }
+
     if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
       return NextResponse.json(
         { error: "Google Generative AI API key not configured." },

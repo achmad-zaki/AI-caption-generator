@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
-import "./globals.css";
+import "../styles/globals.css";
 
 const instrumentSerifHeading = Instrument_Serif({ subsets: ['latin'], weight: ['400'], variable: '--font-heading' });
 

@@ -19,7 +19,11 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "../ui/input-group"
 import { Separator } from "../ui/separator";
 import { Spinner } from "../ui/spinner";
 
-export default function DialogAuth() {
+export default function DialogAuth({
+  triggerClassName,
+}: {
+  triggerClassName?: string;
+}) {
     const [open, setOpen] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -93,7 +97,10 @@ export default function DialogAuth() {
             }}
         >
             <DialogTrigger asChild>
-                <Button size="lg" className="hidden rounded-full px-4 md:inline-flex">
+                <Button
+                    size="lg"
+                    className={triggerClassName ?? "hidden rounded-full px-4 md:inline-flex"}
+                >
                     Masuk
                 </Button>
             </DialogTrigger>
