@@ -4,6 +4,7 @@ import { RiCloseLine, RiMenuLine } from "@remixicon/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import DialogAuth from "./landing/dialog-auth";
 import { ThemeToggle } from "./theme-toggle";
 import { Button, buttonVariants } from "./ui/button";
 
@@ -52,13 +53,7 @@ export function Navbar() {
           <div className="flex items-center gap-1.5">
             <ThemeToggle />
 
-            <Button asChild className="rounded-full hidden md:inline-flex px-4" size="lg">
-              <Link
-                href="/auth/login"
-              >
-                Masuk
-              </Link>
-            </Button>
+            <DialogAuth />
 
             <Button
               size="icon-lg"
