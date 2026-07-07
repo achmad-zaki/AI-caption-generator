@@ -60,7 +60,7 @@ export default function EmailVerificationPage() {
                             Verifikasi
                         </Button>
 
-                        <div className="flex flex-col items-center gap-8">
+                        <div className="flex flex-col items-center gap-5">
                             <Button
                                 variant="ghost"
                                 size="lg"
