@@ -16,7 +16,7 @@ export default function GoogleButton() {
         await authClient.signIn.social(
             {
                 provider: "google",
-                callbackURL: "https://gapless-sena-unraking.ngrok-free.dev/api/auth/callback/google",
+                callbackURL: "/",
             },
             {
                 onError: (ctx) => {
