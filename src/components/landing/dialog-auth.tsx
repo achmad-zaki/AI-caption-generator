@@ -1,9 +1,12 @@
 "use client";
 
+import { useZodForm } from "@/hooks/use-zod-form";
 import { authClient } from "@/lib/auth-client";
 import Image from "next/image";
 import { useState } from "react";
+import { Controller } from "react-hook-form";
 import { CgMail } from "react-icons/cg";
+import { z } from "zod";
 import GoogleButton from "../google-button";
 import { Alert, AlertDescription } from "../ui/alert";
 import { Button } from "../ui/button";
@@ -15,77 +18,58 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "../ui/dialog";
+import { Field, FieldError } from "../ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "../ui/input-group";
 import { Separator } from "../ui/separator";
-import { Spinner } from "../ui/spinner";
 
-export default function DialogAuth({
-  triggerClassName,
-}: {
-  triggerClassName?: string;
-}) {
+const emailSchema = z.object({
+    email: z.email("Alamat email tidak valid"),
+})
+
+type EmailSchemaForm = z.infer<typeof emailSchema>;
+
+export default function DialogAuth() {
     const [open, setOpen] = useState(false);
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [showPassword, setShowPassword] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [isEmailLoading, setIsEmailLoading] = useState(false);
-    const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-    const isLoading = isEmailLoading || isGoogleLoading;
+    const form = useZodForm<EmailSchemaForm>({
+        schema: emailSchema,
+        defaultValues: {
+            email: ""
+        }
+    })
 
-    function resetForm() {
-        setEmail("");
-        setPassword("");
-        setShowPassword(false);
-        setError(null);
-        setIsEmailLoading(false);
-        setIsGoogleLoading(false);
-    }
+    // async function handleEmailSignIn(event: React.SubmitEvent<HTMLFormElement>) {
+    //     event.preventDefault();
+    //     setIsEmailLoading(true);
 
-    async function handleGoogleSignIn() {
-        setError(null);
-        setIsGoogleLoading(true);
+    //     await authClient.signIn.email(
+    //         {
+    //             email,
+    //             password,
+    //             callbackURL: "/",
+    //             rememberMe: true,
+    //         },
+    //         {
+    //             onSuccess: () => {
+    //                 setOpen(false);
+    //                 resetForm();
+    //             },
+    //             onError: (ctx) => {
+    //                 toast.error(ctx.error.statusText)
+    //             },
+    //             onResponse: () => {
+    //                 setIsEmailLoading(false);
+    //             },
+    //         }
+    //     );
+    // }
 
-        await authClient.signIn.social(
-            {
-                provider: "google",
-                callbackURL: "/api/auth/callback/google",
-            },
-            {
-                onError: (ctx) => {
-                    setError(ctx.error.message);
-                    setIsGoogleLoading(false);
-                },
-            }
-        );
-    }
-
-    async function handleEmailSignIn(event: React.FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-        setError(null);
-        setIsEmailLoading(true);
-
-        await authClient.signIn.email(
-            {
-                email,
-                password,
-                callbackURL: "/",
-                rememberMe: true,
-            },
-            {
-                onSuccess: () => {
-                    setOpen(false);
-                    resetForm();
-                },
-                onError: (ctx) => {
-                    setError(ctx.error.message);
-                },
-                onResponse: () => {
-                    setIsEmailLoading(false);
-                },
-            }
-        );
+    const onSubmit = async (value: EmailSchemaForm) => {
+        const { data, error } = await authClient.emailOtp.sendVerificationOtp({
+            email: value.email,
+            type: "sign-in"
+        })
+        console.log(data)
     }
 
     return (
@@ -93,13 +77,12 @@ export default function DialogAuth({
             open={open}
             onOpenChange={(nextOpen) => {
                 setOpen(nextOpen);
-                if (!nextOpen) resetForm();
             }}
         >
             <DialogTrigger asChild>
                 <Button
                     size="lg"
-                    className={triggerClassName ?? "hidden rounded-full px-4 md:inline-flex"}
+                    className="rounded-full px-4"
                 >
                     Masuk
                 </Button>
@@ -133,34 +116,37 @@ export default function DialogAuth({
                         <Separator className="flex-1" />
                     </div>
 
-                    <form onSubmit={handleEmailSignIn} className="space-y-4">
-                        {error && (
-                            <Alert variant="destructive">
-                                <AlertDescription>{error}</AlertDescription>
-                            </Alert>
-                        )}
+                    <Alert variant="destructive">
+                        <AlertDescription>error</AlertDescription>
+                    </Alert>
 
-                        <InputGroup className="rounded-full">
-                            <InputGroupAddon>
-                                <CgMail />
-                            </InputGroupAddon>
-                            <InputGroupInput placeholder="Alamat email" />
-                        </InputGroup>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                        <Controller
+                            name="email"
+                            control={form.control}
+                            render={({ field, fieldState }) => (
+                                <Field data-invalid={fieldState.invalid}>
+                                    <InputGroup className="rounded-full">
+                                        <InputGroupAddon>
+                                            <CgMail />
+                                        </InputGroupAddon>
+                                        <InputGroupInput {...field} aria-invalid={fieldState.invalid} placeholder="Alamat email" />
+                                    </InputGroup>
+
+                                    {fieldState.invalid && (
+                                        <FieldError errors={[fieldState.error]} />
+                                    )}
+                                </Field>
+                            )}
+                        />
 
                         <Button
                             type="submit"
                             size="lg"
-                            className="h-10 w-full rounded-full"
-                            disabled={isLoading}
+                            className="w-full rounded-full"
+                            disabled={form.formState.isSubmitting}
                         >
-                            {isEmailLoading ? (
-                                <>
-                                    <Spinner />
-                                    Memproses...
-                                </>
-                            ) : (
-                                "Masuk"
-                            )}
+                            Lanjutkan
                         </Button>
                     </form>
 

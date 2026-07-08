@@ -104,7 +104,7 @@ export function Navbar() {
               </Link>
               {!session && (
                 <div className="mt-2" onClick={() => setMobileOpen(false)}>
-                  <DialogAuth triggerClassName="w-full rounded-full" />
+                  <DialogAuth />
                 </div>
               )}
               {session?.user.role === "superadmin" && (
