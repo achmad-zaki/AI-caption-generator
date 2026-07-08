@@ -2,22 +2,30 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import {
-    RiAddLine,
     RiCloseLine,
+    RiDeleteBinLine,
+    RiMore2Fill,
     RiSearchLine
 } from "@remixicon/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { TbLayoutSidebarRightCollapse, TbLayoutSidebarRightExpand } from "react-icons/tb";
+import { BiPencil } from "react-icons/bi";
+import { TbLayoutSidebarRightCollapse, TbLayoutSidebarRightExpand, TbPencilPlus } from "react-icons/tb";
 
 const navItems = [
-    { label: "Percakapan baru", icon: RiAddLine, href: "/dashboard" },
+    { label: "Percakapan baru", icon: TbPencilPlus, href: "/dashboard" },
     { label: "Telusuri percakapan", icon: RiSearchLine, href: "/dashboard" },
 ] as const;
 
@@ -26,6 +34,21 @@ const promptHistory = [
     "Ide konten motivasi pagi hari",
     "Copywriting promo diskon 50%",
     "Caption travel ke Bali",
+    "Hook video TikTok makanan",
+    "Hook video TikTok makanan",
+    "Hook video TikTok makanan",
+    "Hook video TikTok makanan",
+    "Hook video TikTok makanan",
+    "Hook video TikTok makanan",
+    "Hook video TikTok makanan",
+    "Hook video TikTok makanan",
+    "Hook video TikTok makanan",
+    "Hook video TikTok makanan",
+    "Hook video TikTok makanan",
+    "Hook video TikTok makanan",
+    "Hook video TikTok makanan",
+    "Hook video TikTok makanan",
+    "Hook video TikTok makanan",
     "Hook video TikTok makanan",
 ] as const;
 
@@ -70,6 +93,49 @@ function SidebarAccount() {
                 <p className="truncate text-xs text-muted-foreground">{user.email}</p>
             </div>
         </div>
+    );
+}
+
+function PromptHistoryItem({
+    prompt,
+    onClose,
+}: {
+    prompt: string;
+    onClose?: () => void;
+}) {
+    return (
+        <li className="group relative">
+            <div className="flex items-center gap-0.5 rounded-lg pr-1 transition-colors group-hover:bg-sidebar-accent group-focus-within:bg-sidebar-accent">
+                <button
+                    type="button"
+                    onClick={onClose}
+                    className="min-w-0 flex-1 truncate rounded-lg px-2.5 py-2 text-left text-sm text-foreground transition-colors group-hover:text-sidebar-accent-foreground group-focus-within:text-sidebar-accent-foreground"
+                >
+                    {prompt}
+                </button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(event) => event.stopPropagation()}
+                        >
+                            <RiMore2Fill className="size-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" side="right" className="w-40">
+                        <DropdownMenuItem>
+                            <BiPencil />
+                            Ubah nama
+                        </DropdownMenuItem>
+                        <DropdownMenuItem variant="destructive">
+                            <RiDeleteBinLine />
+                            Hapus
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+        </li>
     );
 }
 
@@ -119,21 +185,17 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
             <Separator />
 
             <div className="flex min-h-0 flex-1 flex-col px-2 py-2">
-                <p className="flex items-center gap-2 px-2.5 py-1.5 text-xs font-medium text-muted-foreground">
-                    Terbaru
-                </p>
-                <div className="mt-0.5 flex-1 overflow-y-auto">
-                    <ul className="flex flex-col gap-0.5">
-                        {promptHistory.map((prompt) => (
-                            <li key={prompt}>
-                                <button
-                                    type="button"
-                                    onClick={onClose}
-                                    className="w-full truncate rounded-lg px-2.5 py-2 text-left text-sm text-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                                >
-                                    {prompt}
-                                </button>
-                            </li>
+                <div className="mt-0.5 flex-1 overflow-y-auto scroll-fade">
+                    <p className="px-2.5 py-1.5 text-xs font-medium text-muted-foreground">
+                        Terbaru
+                    </p>
+                    <ul className="flex flex-col gap-1">
+                        {promptHistory.map((prompt, index) => (
+                            <PromptHistoryItem
+                                key={index}
+                                prompt={prompt}
+                                onClose={onClose}
+                            />
                         ))}
                     </ul>
                 </div>
@@ -180,7 +242,7 @@ export default function UserDashboardLayout({
                 aria-hidden={!sidebarOpen}
                 tabIndex={sidebarOpen ? 0 : -1}
                 className={cn(
-                    "fixed inset-0 z-40 bg-foreground/20 backdrop-blur-[2px] transition-opacity duration-300 ease-in-out lg:hidden",
+                    "fixed inset-0 z-40 bg-background/40 backdrop-blur-xs transition-opacity duration-300 ease-in-out lg:hidden",
                     sidebarOpen ? "opacity-100" : "pointer-events-none opacity-0",
                 )}
                 onClick={() => setSidebarOpen(false)}
