@@ -11,6 +11,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import { authClient } from "@/lib/auth-client";
+import { promptHistory } from "@/lib/mock-prompt-history";
 import { cn } from "@/lib/utils";
 import {
     RiCloseLine,
@@ -20,6 +21,7 @@ import {
 } from "@remixicon/react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { BiPencil } from "react-icons/bi";
 import { TbLayoutSidebarRightCollapse, TbLayoutSidebarRightExpand, TbPencilPlus } from "react-icons/tb";
@@ -27,29 +29,6 @@ import { TbLayoutSidebarRightCollapse, TbLayoutSidebarRightExpand, TbPencilPlus 
 const navItems = [
     { label: "Percakapan baru", icon: TbPencilPlus, href: "/dashboard" },
     { label: "Telusuri percakapan", icon: RiSearchLine, href: "/dashboard" },
-] as const;
-
-const promptHistory = [
-    "Caption produk skincare untuk Instagram",
-    "Ide konten motivasi pagi hari",
-    "Copywriting promo diskon 50%",
-    "Caption travel ke Bali",
-    "Hook video TikTok makanan",
-    "Hook video TikTok makanan",
-    "Hook video TikTok makanan",
-    "Hook video TikTok makanan",
-    "Hook video TikTok makanan",
-    "Hook video TikTok makanan",
-    "Hook video TikTok makanan",
-    "Hook video TikTok makanan",
-    "Hook video TikTok makanan",
-    "Hook video TikTok makanan",
-    "Hook video TikTok makanan",
-    "Hook video TikTok makanan",
-    "Hook video TikTok makanan",
-    "Hook video TikTok makanan",
-    "Hook video TikTok makanan",
-    "Hook video TikTok makanan",
 ] as const;
 
 function SidebarAccount() {
@@ -97,22 +76,36 @@ function SidebarAccount() {
 }
 
 function PromptHistoryItem({
-    prompt,
+    id,
+    title,
+    isActive,
     onClose,
 }: {
-    prompt: string;
+    id: string;
+    title: string;
+    isActive: boolean;
     onClose?: () => void;
 }) {
     return (
         <li className="group relative">
-            <div className="flex items-center gap-0.5 rounded-lg pr-1 transition-colors group-hover:bg-sidebar-accent group-focus-within:bg-sidebar-accent">
-                <button
-                    type="button"
+            <div
+                className={cn(
+                    "flex items-center gap-0.5 rounded-lg pr-1 transition-colors group-hover:bg-sidebar-accent group-focus-within:bg-sidebar-accent",
+                    isActive && "bg-sidebar-accent",
+                )}
+            >
+                <Link
+                    href={`/dashboard/${id}`}
                     onClick={onClose}
-                    className="min-w-0 flex-1 truncate rounded-lg px-2.5 py-2 text-left text-sm text-foreground transition-colors group-hover:text-sidebar-accent-foreground group-focus-within:text-sidebar-accent-foreground"
+                    className={cn(
+                        "min-w-0 flex-1 truncate rounded-lg px-2.5 py-2 text-sm transition-colors group-hover:text-sidebar-accent-foreground group-focus-within:text-sidebar-accent-foreground",
+                        isActive
+                            ? "text-sidebar-accent-foreground"
+                            : "text-foreground",
+                    )}
                 >
-                    {prompt}
-                </button>
+                    {title}
+                </Link>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button
@@ -140,6 +133,8 @@ function PromptHistoryItem({
 }
 
 function SidebarContent({ onClose }: { onClose?: () => void }) {
+    const pathname = usePathname();
+
     return (
         <div className="flex h-full w-[260px] flex-col">
             <div className="flex h-12 shrink-0 items-center justify-between gap-2 px-3">
@@ -190,10 +185,12 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                         Terbaru
                     </p>
                     <ul className="flex flex-col gap-1">
-                        {promptHistory.map((prompt, index) => (
+                        {promptHistory.map((item) => (
                             <PromptHistoryItem
-                                key={index}
-                                prompt={prompt}
+                                key={item.id}
+                                id={item.id}
+                                title={item.title}
+                                isActive={pathname === `/dashboard/${item.id}`}
                                 onClose={onClose}
                             />
                         ))}
