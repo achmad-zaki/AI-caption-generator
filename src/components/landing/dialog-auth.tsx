@@ -3,12 +3,13 @@
 import { useZodForm } from "@/hooks/use-zod-form";
 import { authClient } from "@/lib/auth-client";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller } from "react-hook-form";
 import { CgMail } from "react-icons/cg";
+import { toast } from "sonner";
 import { z } from "zod";
 import GoogleButton from "../google-button";
-import { Alert, AlertDescription } from "../ui/alert";
 import { Button } from "../ui/button";
 import {
     Dialog,
@@ -21,6 +22,7 @@ import {
 import { Field, FieldError } from "../ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "../ui/input-group";
 import { Separator } from "../ui/separator";
+import { Spinner } from "../ui/spinner";
 
 const emailSchema = z.object({
     email: z.email("Alamat email tidak valid"),
@@ -29,7 +31,9 @@ const emailSchema = z.object({
 type EmailSchemaForm = z.infer<typeof emailSchema>;
 
 export default function DialogAuth() {
+    const router = useRouter();
     const [open, setOpen] = useState(false);
+    const [isLoadingEmail, setIsLoadingEmail] = useState(false);
 
     const form = useZodForm<EmailSchemaForm>({
         schema: emailSchema,
@@ -65,11 +69,25 @@ export default function DialogAuth() {
     // }
 
     const onSubmit = async (value: EmailSchemaForm) => {
-        const { data, error } = await authClient.emailOtp.sendVerificationOtp({
-            email: value.email,
-            type: "sign-in"
-        })
-        console.log(data)
+        setIsLoadingEmail(true);
+        try {
+            const { data, error } = await authClient.emailOtp.sendVerificationOtp({
+                email: value.email,
+                type: "sign-in"
+            })
+
+            if (error) {
+                toast.error(error.message)
+                return;
+            }
+
+            if (data.success) {
+                toast.success("Kode verifikasi berhasil dikirim ke email Anda")
+                router.push("/auth/email-verification");
+            }
+        } finally {
+            setIsLoadingEmail(false);
+        }
     }
 
     return (
@@ -116,10 +134,6 @@ export default function DialogAuth() {
                         <Separator className="flex-1" />
                     </div>
 
-                    <Alert variant="destructive">
-                        <AlertDescription>error</AlertDescription>
-                    </Alert>
-
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                         <Controller
                             name="email"
@@ -144,9 +158,10 @@ export default function DialogAuth() {
                             type="submit"
                             size="lg"
                             className="w-full rounded-full"
-                            disabled={form.formState.isSubmitting}
+                            disabled={isLoadingEmail}
                         >
-                            Lanjutkan
+                            {isLoadingEmail && <Spinner className="size-4" />}
+                            {isLoadingEmail ? "Mengirim kode verifikasi..." : "Lanjutkan"}
                         </Button>
                     </form>
 
