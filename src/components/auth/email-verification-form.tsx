@@ -8,7 +8,23 @@ import { RiMailLine } from "@remixicon/react";
 import Image from "next/image";
 import Link from "next/link";
 
-export default function EmailVerificationPage() {
+function maskEmail(email: string) {
+    const [localPart, domain] = email.split("@");
+
+    if (!localPart || !domain) {
+        return email;
+    }
+
+    const visible = localPart.slice(0, 2);
+    return `${visible}***@${domain}`;
+}
+
+type VerifyEmailFormProps = {
+    email?: string;
+};
+
+export function VerifyEmailForm({ email }: VerifyEmailFormProps) {
+    console.log(email)
     return (
         <div className="flex min-h-dvh flex-col bg-background">
             <header className="flex items-center justify-between px-4 py-4 md:px-6 md:py-5">
@@ -42,7 +58,7 @@ export default function EmailVerificationPage() {
                         </h1>
                         <p className="text-sm leading-relaxed text-muted-foreground">
                             Kami mengirim kode 6 digit ke{" "}
-                            <span className="font-medium text-foreground">jo***@gmail.com</span>
+                            <span className="font-medium text-foreground">email</span>
                         </p>
                     </div>
 

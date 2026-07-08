@@ -83,7 +83,9 @@ export default function DialogAuth() {
 
             if (data.success) {
                 toast.success("Kode verifikasi berhasil dikirim ke email Anda")
-                router.push("/auth/email-verification");
+                setOpen(false);
+                form.reset();
+                router.push(`/auth/verify-email?email=${encodeURIComponent(value.email)}`);
             }
         } finally {
             setIsLoadingEmail(false);
