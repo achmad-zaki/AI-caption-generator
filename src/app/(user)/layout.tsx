@@ -28,7 +28,7 @@ import { TbLayoutSidebarRightCollapse, TbLayoutSidebarRightExpand, TbPencilPlus 
 
 const navItems = [
     { label: "Percakapan baru", icon: TbPencilPlus, href: "/dashboard" },
-    { label: "Telusuri percakapan", icon: RiSearchLine, href: "/dashboard" },
+    { label: "Telusuri percakapan", icon: RiSearchLine, href: "/dashboard/search" },
 ] as const;
 
 function SidebarAccount() {
@@ -179,10 +179,10 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
 
             <Separator />
 
-            <div className="flex min-h-0 flex-1 flex-col px-2 py-2">
-                <div className="mt-0.5 flex-1 overflow-y-auto scroll-fade">
+            <div className="flex min-h-0 flex-1 flex-col pl-2 pr-4 py-2 overflow-y-auto scroll-fade">
+                <div className="mt-0.5 flex-1">
                     <p className="px-2.5 py-1.5 text-xs font-medium text-muted-foreground">
-                        Terbaru
+                        Riwayat percakapan
                     </p>
                     <ul className="flex flex-col gap-1">
                         {promptHistory.map((item) => (
@@ -198,7 +198,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                 </div>
             </div>
 
-            <Separator className="mx-2" />
+            <Separator />
 
             <div className="shrink-0">
                 <SidebarAccount />
@@ -282,7 +282,7 @@ export default function UserDashboardLayout({
                     {!sidebarOpen && <BrandLogo />}
                 </header>
 
-                <main className="flex min-h-0 flex-1 flex-col">{children}</main>
+                <main className="flex min-h-0 flex-1 flex-col p-8">{children}</main>
             </div>
         </div>
     );

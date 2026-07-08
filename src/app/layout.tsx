@@ -16,7 +16,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CaptionAI — Buat Caption Instagram dengan AI",
+  title: {
+    template: "%s | CaptionAI",
+    default: "CaptionAI — Buat Caption Instagram dengan AI",
+  },
   description:
     "Buat caption Instagram yang engaging dalam hitungan detik. AI memahami topik Anda dan menghasilkan hook, CTA, serta hashtag yang relevan.",
 };

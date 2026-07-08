@@ -1,4 +1,4 @@
-import { CaptionGenerator } from "./caption-generator";
+import { CaptionGenerator } from "../caption-generator";
 
 export function Hero() {
   return (

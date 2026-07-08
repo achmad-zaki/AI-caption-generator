@@ -9,10 +9,10 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BiAddToQueue } from "react-icons/bi";
 import { BsArrowRightShort } from "react-icons/bs";
-import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
-import { Button } from "../ui/button";
-import { Spinner } from "../ui/spinner";
-import { Textarea } from "../ui/textarea";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { Button } from "./ui/button";
+import { Spinner } from "./ui/spinner";
+import { Textarea } from "./ui/textarea";
 
 type GenerateResult = {
   caption: string;
