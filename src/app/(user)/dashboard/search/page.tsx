@@ -2,29 +2,38 @@
 
 import { Button } from "@/components/ui/button";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
-import {
-    groupHistoryByDate,
-    promptHistory,
-} from "@/lib/mock-prompt-history";
+import { formatHistoryDate, groupHistoryByDate } from "@/lib/mock-prompt-history";
 import { cn } from "@/lib/utils";
 import { RiCloseLine, RiSearchLine } from "@remixicon/react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MdArrowOutward } from "react-icons/md";
 
 export default function SearchPage() {
     const [query, setQuery] = useState("");
+    const [history, setHistory] = useState<{ id: string; title: string; createdAt: string }[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetch("/api/history")
+            .then(res => res.json())
+            .then(data => {
+                if (data.histories) setHistory(data.histories);
+            })
+            .catch(err => console.error(err))
+            .finally(() => setLoading(false));
+    }, []);
 
     const filteredGroups = useMemo(() => {
         const normalizedQuery = query.trim().toLowerCase();
         const filtered = normalizedQuery
-            ? promptHistory.filter((item) =>
+            ? history.filter((item) =>
                 item.title.toLowerCase().includes(normalizedQuery),
             )
-            : promptHistory;
+            : history;
 
         return groupHistoryByDate(filtered);
-    }, [query]);
+    }, [query, history]);
 
     const hasResults = filteredGroups.length > 0;
 
@@ -50,7 +59,9 @@ export default function SearchPage() {
                 </InputGroup>
 
                 <div className="mt-6">
-                    {!hasResults ? (
+                    {loading ? (
+                        <p className="py-8 text-center text-sm text-muted-foreground">Memuat...</p>
+                    ) : !hasResults ? (
                         <p className="py-8 text-center text-sm text-muted-foreground">
                             {query.trim()
                                 ? "Tidak ada percakapan yang cocok."

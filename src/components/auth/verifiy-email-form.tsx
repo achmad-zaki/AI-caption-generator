@@ -2,7 +2,6 @@
 
 import { useZodForm } from "@/hooks/use-zod-form";
 import { authClient } from "@/lib/auth-client";
-import { getPendingOtpKey } from "@/lib/auth-utils";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller } from "react-hook-form";
@@ -61,7 +60,6 @@ export default function VerifyEmailForm({ email }: { email?: string }) {
             const exists = await checkEmailExists(email);
 
             if (!exists) {
-                sessionStorage.setItem(getPendingOtpKey(email), data.code);
                 router.push(`/auth/complete-profile?email=${encodeURIComponent(email)}`);
                 return;
             }

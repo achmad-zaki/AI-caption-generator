@@ -1,6 +1,5 @@
 "use client";
 
-import { getPendingOtpKey } from "@/lib/auth-utils";
 import { useZodForm } from "@/hooks/use-zod-form";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
@@ -32,15 +31,11 @@ export default function CompleteProfileForm({ email }: { email: string }) {
     });
 
     useEffect(() => {
-        const pendingOtp = sessionStorage.getItem(getPendingOtpKey(email));
-
-        if (!pendingOtp) {
-            toast.error("Sesi verifikasi tidak ditemukan. Silakan masuk ulang.");
+        if (!email) {
+            toast.error("Email tidak ditemukan. Silakan masuk ulang.");
             router.replace("/");
             return;
         }
-
-        setOtp(pendingOtp);
     }, [email, router]);
 
     const onSubmit = async (data: ProfileForm) => {
@@ -63,9 +58,8 @@ export default function CompleteProfileForm({ email }: { email: string }) {
                 return;
             }
 
-            sessionStorage.removeItem(getPendingOtpKey(email));
             toast.success("Akun berhasil dibuat!");
-            router.push("/dashboard");
+            router.push("/");
         } finally {
             setIsSubmitting(false);
         }

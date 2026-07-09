@@ -2,6 +2,7 @@
 
 import { useZodForm } from "@/hooks/use-zod-form";
 import { authClient } from "@/lib/auth-client";
+import { useAuthDialogStore } from "@/stores/auth-dialog-store";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -32,7 +33,7 @@ type EmailSchemaForm = z.infer<typeof emailSchema>;
 
 export default function DialogAuth() {
     const router = useRouter();
-    const [open, setOpen] = useState(false);
+    const { open, setOpen } = useAuthDialogStore();
     const [isLoadingEmail, setIsLoadingEmail] = useState(false);
 
     const form = useZodForm<EmailSchemaForm>({
@@ -69,9 +70,7 @@ export default function DialogAuth() {
     return (
         <Dialog
             open={open}
-            onOpenChange={(nextOpen) => {
-                setOpen(nextOpen);
-            }}
+            onOpenChange={setOpen}
         >
             <DialogTrigger asChild>
                 <Button

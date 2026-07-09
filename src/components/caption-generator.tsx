@@ -1,6 +1,8 @@
 "use client";
 
+import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
+import { useAuthDialogStore } from "@/stores/auth-dialog-store";
 import {
   RiAlertLine,
   RiCheckLine,
@@ -14,28 +16,44 @@ import { Button } from "./ui/button";
 import { Spinner } from "./ui/spinner";
 import { Textarea } from "./ui/textarea";
 
-type GenerateResult = {
+import { useRouter } from "next/navigation";
+
+export type GenerateResult = {
   caption: string;
   hashtags: string[];
 };
 
-export function CaptionGenerator() {
+export type HistoryData = {
+  id: string;
+  imageUrl: string;
+  style: string | null;
+  caption: string;
+  hashtags: string[];
+};
+
+export function CaptionGenerator({ initialData }: { initialData?: HistoryData }) {
+  const router = useRouter();
+  const { data: session } = authClient.useSession();
+  const setAuthDialogOpen = useAuthDialogStore((state) => state.setOpen);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // States
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [style, setStyle] = useState("");
-  const [showStyleInput, setShowStyleInput] = useState(false);
+  const [style, setStyle] = useState(initialData?.style ?? "");
+  const [showStyleInput, setShowStyleInput] = useState(!!initialData?.style);
   const [isDragging, setIsDragging] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<GenerateResult | null>(null);
+  
+  const [result, setResult] = useState<GenerateResult | null>(
+    initialData ? { caption: initialData.caption, hashtags: initialData.hashtags } : null
+  );
   const [copied, setCopied] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  
+  const [previewUrl, setPreviewUrl] = useState<string | null>(initialData?.imageUrl ?? null);
 
   useEffect(() => {
-    if (!imageFile) {
-      setPreviewUrl(null);
-      return;
-    }
+    if (!imageFile) return;
     const url = URL.createObjectURL(imageFile);
     setPreviewUrl(url);
     return () => URL.revokeObjectURL(url);
@@ -60,6 +78,11 @@ export function CaptionGenerator() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!imageFile) return;
+
+    if (!session) {
+      setAuthDialogOpen(true);
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -91,6 +114,10 @@ export function CaptionGenerator() {
       const data = await res.json();
 
       if (!res.ok) {
+        if (res.status === 401) {
+          setAuthDialogOpen(true);
+          return;
+        }
         setError(data.error ?? "Terjadi kesalahan. Coba lagi.");
         return;
       }
@@ -101,6 +128,12 @@ export function CaptionGenerator() {
           ? { caption: content, hashtags: [] }
           : content
       );
+      
+      // Ganti URL ke halaman history tanpa full page reload
+      if (data.historyId) {
+        router.replace(`/dashboard/${data.historyId}`);
+        window.dispatchEvent(new Event("historyUpdated"));
+      }
     } catch {
       setError("Gagal terhubung ke server. Periksa koneksi Anda.");
     } finally {

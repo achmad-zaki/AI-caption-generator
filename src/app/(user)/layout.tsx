@@ -11,7 +11,6 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import { authClient } from "@/lib/auth-client";
-import { promptHistory } from "@/lib/mock-prompt-history";
 import { cn } from "@/lib/utils";
 import {
     RiCloseLine,
@@ -24,7 +23,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BiLogOutCircle, BiPencil } from "react-icons/bi";
 import { TbLayoutSidebarRightCollapse, TbLayoutSidebarRightExpand, TbPencilPlus } from "react-icons/tb";
 
@@ -164,6 +163,26 @@ function PromptHistoryItem({
 
 function SidebarContent({ onClose }: { onClose?: () => void }) {
     const pathname = usePathname();
+    const [history, setHistory] = useState<{ id: string; title: string; createdAt: string }[]>([]);
+    const [loadingHistory, setLoadingHistory] = useState(true);
+
+    const fetchHistory = () => {
+        fetch("/api/history")
+            .then(res => res.json())
+            .then(data => {
+                if (data.histories) setHistory(data.histories);
+            })
+            .catch(err => console.error("Failed to fetch history:", err))
+            .finally(() => setLoadingHistory(false));
+    };
+
+    useEffect(() => {
+        fetchHistory();
+
+        const handleUpdate = () => fetchHistory();
+        window.addEventListener("historyUpdated", handleUpdate);
+        return () => window.removeEventListener("historyUpdated", handleUpdate);
+    }, []);
 
     return (
         <div className="flex h-full w-[260px] flex-col px-3">
@@ -215,15 +234,21 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                         Riwayat percakapan
                     </p>
                     <ul className="flex flex-col gap-1">
-                        {promptHistory.map((item) => (
-                            <PromptHistoryItem
-                                key={item.id}
-                                id={item.id}
-                                title={item.title}
-                                isActive={pathname === `/dashboard/${item.id}`}
-                                onClose={onClose}
-                            />
-                        ))}
+                        {loadingHistory ? (
+                            <li className="px-2.5 py-2 text-xs text-muted-foreground">Memuat...</li>
+                        ) : history.length === 0 ? (
+                            <li className="px-2.5 py-2 text-xs text-muted-foreground">Belum ada percakapan</li>
+                        ) : (
+                            history.map((item) => (
+                                <PromptHistoryItem
+                                    key={item.id}
+                                    id={item.id}
+                                    title={item.title}
+                                    isActive={pathname === `/dashboard/${item.id}`}
+                                    onClose={onClose}
+                                />
+                            ))
+                        )}
                     </ul>
                 </div>
             </div>

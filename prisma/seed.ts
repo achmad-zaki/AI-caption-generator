@@ -22,7 +22,7 @@ async function main() {
 
   await prisma.user.update({
     where: { email },
-    data: { role: "superadmin" },
+    data: { role: "SUPERADMIN" },
   });
 
   console.log(`✓ ${email} sekarang superadmin`);

@@ -107,7 +107,7 @@ export function Navbar() {
                   <DialogAuth />
                 </div>
               )}
-              {session?.user.role === "superadmin" && (
+              {(session?.user as any)?.role === "SUPERADMIN" && (
                 <Link
                   href="/admin"
                   className={buttonVariants({
