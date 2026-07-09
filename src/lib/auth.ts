@@ -1,9 +1,9 @@
-import { ac, superadmin, user } from "@/lib/permissions";
+import { Role } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
-import { admin, emailOTP } from "better-auth/plugins";
+import { emailOTP } from "better-auth/plugins";
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY!);
@@ -13,21 +13,22 @@ export const auth = betterAuth({
     provider: "postgresql",
   }),
   emailAndPassword: {
-    enabled: true,
-  },
-  user: {
-    additionalFields: {
-      age: {
-        type: "string",
-        required: false,
-      }
-    }
+    enabled: false,
   },
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     },
+  },
+  user: {
+    additionalFields: {
+      role: {
+        type: "string",
+        required: true,
+        defaultValue: Role.USER
+      }
+    }
   },
   plugins: [
     emailOTP({
@@ -45,15 +46,6 @@ export const auth = betterAuth({
           `,
         })
       }
-    }),
-    admin({
-      ac,
-      roles: {
-        superadmin,
-        user,
-      },
-      adminRoles: ["superadmin"],
-      defaultRole: "user",
     }),
     nextCookies(),
   ],

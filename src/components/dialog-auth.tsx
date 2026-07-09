@@ -9,8 +9,8 @@ import { Controller } from "react-hook-form";
 import { CgMail } from "react-icons/cg";
 import { toast } from "sonner";
 import { z } from "zod";
-import GoogleButton from "../google-button";
-import { Button } from "../ui/button";
+import GoogleButton from "./google-button";
+import { Button } from "./ui/button";
 import {
     Dialog,
     DialogContent,
@@ -18,15 +18,15 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-} from "../ui/dialog";
-import { Field, FieldError } from "../ui/field";
-import { InputGroup, InputGroupAddon, InputGroupInput } from "../ui/input-group";
-import { Separator } from "../ui/separator";
-import { Spinner } from "../ui/spinner";
+} from "./ui/dialog";
+import { Field, FieldError } from "./ui/field";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "./ui/input-group";
+import { Separator } from "./ui/separator";
+import { Spinner } from "./ui/spinner";
 
 const emailSchema = z.object({
     email: z.email("Alamat email tidak valid"),
-})
+});
 
 type EmailSchemaForm = z.infer<typeof emailSchema>;
 
@@ -38,25 +38,25 @@ export default function DialogAuth() {
     const form = useZodForm<EmailSchemaForm>({
         schema: emailSchema,
         defaultValues: {
-            email: ""
-        }
-    })
+            email: "",
+        },
+    });
 
     const onSubmit = async (value: EmailSchemaForm) => {
         setIsLoadingEmail(true);
         try {
             const { data, error } = await authClient.emailOtp.sendVerificationOtp({
                 email: value.email,
-                type: "sign-in"
-            })
+                type: "sign-in",
+            });
 
             if (error) {
-                toast.error(error.message)
+                toast.error("Terjadi kesalahan saat mengirim kode verifikasi");
                 return;
             }
 
             if (data.success) {
-                toast.success("Kode verifikasi berhasil dikirim ke email Anda")
+                toast.success("Kode verifikasi berhasil dikirim ke email Anda");
                 setOpen(false);
                 form.reset();
                 router.push(`/auth/verify-email?email=${encodeURIComponent(value.email)}`);
@@ -64,7 +64,7 @@ export default function DialogAuth() {
         } finally {
             setIsLoadingEmail(false);
         }
-    }
+    };
 
     return (
         <Dialog
@@ -94,7 +94,7 @@ export default function DialogAuth() {
                                 className="size-7"
                             />
                         </div>
-                        <DialogTitle className="font-sans text-xl">Selamat datang kembali</DialogTitle>
+                        <DialogTitle className="font-sans text-xl">Masuk ke CaptionAI</DialogTitle>
                         <DialogDescription className="max-w-[280px] text-balance">
                             Masuk untuk menyimpan caption dan mengakses fitur lengkap CaptionAI.
                         </DialogDescription>
@@ -148,6 +148,6 @@ export default function DialogAuth() {
                     </p>
                 </div>
             </DialogContent>
-        </Dialog >
+        </Dialog>
     );
 }

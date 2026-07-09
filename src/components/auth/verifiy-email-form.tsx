@@ -1,8 +1,9 @@
-"use client"
+"use client";
 
 import { useZodForm } from "@/hooks/use-zod-form";
 import { authClient } from "@/lib/auth-client";
-import Link from "next/link";
+import { getPendingOtpKey } from "@/lib/auth-utils";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller } from "react-hook-form";
 import { toast } from "sonner";
@@ -10,16 +11,36 @@ import { z } from "zod";
 import { Button } from "../ui/button";
 import { Field, FieldError } from "../ui/field";
 import { Input } from "../ui/input";
-import { Separator } from "../ui/separator";
 import { Spinner } from "../ui/spinner";
 
 const codeVerificationSchema = z.object({
-    code: z.string().min(6, { message: "Kode verifikasi harus 6 digit" }).max(6, { message: "Kode verifikasi harus 6 digit" }).refine((value) => /^\d{6}$/.test(value), { message: "Kode verifikasi harus 6 digit" }),
+    code: z
+        .string()
+        .min(6, { message: "Kode verifikasi harus 6 digit" })
+        .max(6, { message: "Kode verifikasi harus 6 digit" })
+        .refine((value) => /^\d{6}$/.test(value), { message: "Kode verifikasi harus 6 digit" }),
 });
 
 type CodeVerificationSchemaForm = z.infer<typeof codeVerificationSchema>;
 
+async function checkEmailExists(email: string) {
+    const response = await fetch("/api/auth/check-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+    });
+
+    if (!response.ok) {
+        throw new Error("Gagal memeriksa email");
+    }
+
+    const data = await response.json() as { exists: boolean };
+    return data.exists;
+}
+
 export default function VerifyEmailForm({ email }: { email?: string }) {
+    const router = useRouter();
+    const [isVerifying, setIsVerifying] = useState(false);
     const [isResending, setIsResending] = useState(false);
 
     const form = useZodForm<CodeVerificationSchemaForm>({
@@ -30,8 +51,39 @@ export default function VerifyEmailForm({ email }: { email?: string }) {
     });
 
     const onSubmit = async (data: CodeVerificationSchemaForm) => {
-        console.log(data)
-    }
+        if (!email) {
+            toast.error("Email tidak ditemukan. Silakan masuk ulang.");
+            return;
+        }
+
+        setIsVerifying(true);
+        try {
+            const exists = await checkEmailExists(email);
+
+            if (!exists) {
+                sessionStorage.setItem(getPendingOtpKey(email), data.code);
+                router.push(`/auth/complete-profile?email=${encodeURIComponent(email)}`);
+                return;
+            }
+
+            const { error } = await authClient.signIn.emailOtp({
+                email,
+                otp: data.code,
+            });
+
+            if (error) {
+                toast.error(error.message);
+                return;
+            }
+
+            toast.success("Berhasil masuk!");
+            router.push("/dashboard");
+        } catch {
+            toast.error("Terjadi kesalahan. Silakan coba lagi.");
+        } finally {
+            setIsVerifying(false);
+        }
+    };
 
     const resendEmail = async () => {
         if (!email) {
@@ -57,7 +109,7 @@ export default function VerifyEmailForm({ email }: { email?: string }) {
         } finally {
             setIsResending(false);
         }
-    }
+    };
 
     return (
         <form
@@ -68,14 +120,16 @@ export default function VerifyEmailForm({ email }: { email?: string }) {
                 control={form.control}
                 name="code"
                 render={({ field, fieldState }) => (
-                    <Field aria-invalid={fieldState.invalid}>
+                    <Field data-invalid={fieldState.invalid}>
                         <Input
                             {...field}
                             aria-invalid={fieldState.invalid}
                             onWheel={(event) => event.currentTarget.blur()}
-                            type="number"
-                            className="h-11 rounded-full px-4"
-                            placeholder="Kode verifikasi"
+                            inputMode="numeric"
+                            autoComplete="one-time-code"
+                            className="h-11 rounded-full px-4 text-center tracking-widest"
+                            placeholder="000000"
+                            maxLength={6}
                         />
                         {fieldState.error && <FieldError>{[fieldState.error.message]}</FieldError>}
                     </Field>
@@ -86,39 +140,23 @@ export default function VerifyEmailForm({ email }: { email?: string }) {
                 type="submit"
                 size="lg"
                 className="h-11 w-full rounded-full"
+                disabled={isVerifying}
             >
-                Verifikasi
+                {isVerifying && <Spinner className="size-4" />}
+                {isVerifying ? "Memverifikasi..." : "Verifikasi"}
             </Button>
 
-            <div className="flex flex-col items-center gap-5">
-                <Button
-                    type="button"
-                    variant="ghost"
-                    size="lg"
-                    className="h-11 w-full rounded-full hover:bg-transparent!"
-                    disabled={isResending || !email}
-                    onClick={resendEmail}
-                >
-                    {isResending && <Spinner className="size-4" />}
-                    {isResending ? "Mengirim ulang kode..." : "Kirim ulang kode"}
-                </Button>
-
-                <div className="flex items-center gap-2 w-full">
-                    <Separator className="flex-1" />
-                    <span className="text-sm text-muted-foreground">atau</span>
-                    <Separator className="flex-1" />
-                </div>
-
-                <Button
-                    size="lg"
-                    variant="outline"
-                    className="h-11 w-full rounded-full"
-                    asChild>
-                    <Link href="/auth/password-reset">
-                        Lanjutkan dengan password
-                    </Link>
-                </Button>
-            </div>
+            <Button
+                type="button"
+                variant="ghost"
+                size="lg"
+                className="h-11 w-full rounded-full hover:bg-transparent!"
+                disabled={isResending || !email}
+                onClick={resendEmail}
+            >
+                {isResending && <Spinner className="size-4" />}
+                {isResending ? "Mengirim ulang kode..." : "Kirim ulang kode"}
+            </Button>
         </form>
-    )
+    );
 }

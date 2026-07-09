@@ -6,7 +6,10 @@ import { Hero } from "@/components/landing/hero";
 import { Navbar } from "@/components/landing/navbar";
 import { Showcase } from "@/components/landing/showcase";
 import { Stats } from "@/components/landing/stats";
+import { auth } from "@/lib/auth";
 import Link from "next/link";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 function CTA() {
   return (
@@ -38,7 +41,13 @@ function CTA() {
   );
 }
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth.api.getSession({ headers: await headers() });
+
+  if (session) {
+    redirect("/dashboard");
+  }
+
   return (
     <div className="flex min-h-full flex-col bg-background">
       <Navbar />

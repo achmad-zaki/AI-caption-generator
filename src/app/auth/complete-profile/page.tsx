@@ -1,16 +1,17 @@
-import VerifyEmailForm from "@/components/auth/verifiy-email-form";
+import CompleteProfileForm from "@/components/auth/complete-profile-form";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { RiMailLine } from "@remixicon/react";
+import { prisma } from "@/lib/prisma";
+import { RiUserLine } from "@remixicon/react";
 import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
-    title: "Verifikasi Email",
+    title: "Lengkapi Profil",
 };
 
-export default async function VerifyEmailPage({
+export default async function CompleteProfilePage({
     searchParams,
 }: {
     searchParams: Promise<{ email?: string }>;
@@ -18,6 +19,15 @@ export default async function VerifyEmailPage({
     const { email } = await searchParams;
 
     if (!email) {
+        redirect("/");
+    }
+
+    const existingUser = await prisma.user.findUnique({
+        where: { email },
+        select: { id: true },
+    });
+
+    if (existingUser) {
         redirect("/");
     }
 
@@ -44,29 +54,24 @@ export default async function VerifyEmailPage({
                 <div className="w-full max-w-[400px]">
                     <div className="mb-6 flex justify-center">
                         <div className="flex size-16 items-center justify-center rounded-full bg-muted">
-                            <RiMailLine className="size-7 text-muted-foreground" />
+                            <RiUserLine className="size-7 text-muted-foreground" />
                         </div>
                     </div>
 
                     <div className="space-y-3 text-center">
                         <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                            Periksa kotak masuk
+                            Lengkapi profil Anda
                         </h1>
                         <p className="text-sm leading-relaxed text-muted-foreground">
-                            Kami mengirim kode 6 digit ke{" "}
-                            <span className="font-medium text-foreground">{email}</span>
+                            Email{" "}
+                            <span className="font-medium text-foreground">{email}</span>{" "}
+                            sudah terverifikasi. Masukkan nama Anda untuk menyelesaikan pendaftaran.
                         </p>
                     </div>
 
-                    <VerifyEmailForm email={email} />
+                    <CompleteProfileForm email={email} />
                 </div>
             </main>
-
-            <footer className="px-6 pb-8 text-center">
-                <p className="text-xs text-muted-foreground">
-                    Tidak menerima kode? Periksa folder spam atau promosi.
-                </p>
-            </footer>
         </div>
     );
 }

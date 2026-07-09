@@ -3,7 +3,7 @@
 import { authClient } from "@/lib/auth-client";
 import { RiLogoutBoxLine, RiShieldUserLine } from "@remixicon/react";
 import Link from "next/link";
-import DialogAuth from "./landing/dialog-auth";
+import DialogAuth from "./dialog-auth";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import {
   DropdownMenu,

@@ -5,10 +5,10 @@ import { RiCloseLine, RiMenuLine } from "@remixicon/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import DialogAuth from "../dialog-auth";
 import { ThemeToggle } from "../theme-toggle";
 import { Button, buttonVariants } from "../ui/button";
 import { UserMenu } from "../user-menu";
-import DialogAuth from "./dialog-auth";
 
 const navLinks = [
   { label: "Fitur", href: "#fitur" },
