@@ -2,27 +2,17 @@
 
 import { Button } from "@/components/ui/button";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
-import { formatHistoryDate, groupHistoryByDate } from "@/lib/mock-prompt-history";
+import { useHistories } from "@/hooks/use-history";
+import { groupHistoryByDate } from "@/lib/mock-prompt-history";
 import { cn } from "@/lib/utils";
 import { RiCloseLine, RiSearchLine } from "@remixicon/react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { MdArrowOutward } from "react-icons/md";
 
 export default function SearchPage() {
     const [query, setQuery] = useState("");
-    const [history, setHistory] = useState<{ id: string; title: string; createdAt: string }[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        fetch("/api/history")
-            .then(res => res.json())
-            .then(data => {
-                if (data.histories) setHistory(data.histories);
-            })
-            .catch(err => console.error(err))
-            .finally(() => setLoading(false));
-    }, []);
+    const { data: history = [], isPending, isError } = useHistories();
 
     const filteredGroups = useMemo(() => {
         const normalizedQuery = query.trim().toLowerCase();
@@ -59,8 +49,12 @@ export default function SearchPage() {
                 </InputGroup>
 
                 <div className="mt-6">
-                    {loading ? (
+                    {isPending ? (
                         <p className="py-8 text-center text-sm text-muted-foreground">Memuat...</p>
+                    ) : isError ? (
+                        <p className="py-8 text-center text-sm text-muted-foreground">
+                            Gagal memuat riwayat percakapan.
+                        </p>
                     ) : !hasResults ? (
                         <p className="py-8 text-center text-sm text-muted-foreground">
                             {query.trim()

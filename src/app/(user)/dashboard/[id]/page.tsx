@@ -1,47 +1,48 @@
-import { CaptionGenerator } from "@/components/caption-generator";
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import { headers } from "next/headers";
-import { notFound, redirect } from "next/navigation";
+"use client";
 
-type ConversationPageProps = {
-    params: Promise<{ id: string }>;
-};
+import { ConversationView } from "@/components/conversation-view";
+import { Spinner } from "@/components/ui/spinner";
+import { useConversation } from "@/hooks/use-conversation";
+import { ConversationNotFoundError } from "@/lib/api/history";
+import { authClient } from "@/lib/auth-client";
+import { notFound, useParams, useRouter } from "next/navigation";
+import { useEffect } from "react";
 
-export default async function ConversationPage({ params }: ConversationPageProps) {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
+export default function ConversationPage() {
+    const { id } = useParams<{ id: string }>();
+    const router = useRouter();
+    const { data: session, isPending: isSessionPending } = authClient.useSession();
+    const { data, isPending, isError, error } = useConversation(id);
 
-    if (!session) {
-        redirect("/");
+    useEffect(() => {
+        if (!isSessionPending && !session) {
+            router.replace("/");
+        }
+    }, [isSessionPending, session, router]);
+
+    if (isSessionPending || isPending) {
+        return (
+            <div className="-m-8 flex min-h-0 flex-1 flex-col items-center justify-center">
+                <Spinner />
+            </div>
+        );
     }
 
-    const { id } = await params;
-
-    const conversation = await prisma.history.findUnique({
-        where: { id },
-    });
-
-    if (!conversation || conversation.userId !== session.user.id) {
+    if (error instanceof ConversationNotFoundError) {
         notFound();
     }
 
-    return (
-        <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto w-full pb-8 scroll-fade">
-            <h1 className="mb-8 shrink-0 text-center text-3xl tracking-tight font-medium text-foreground md:text-4xl">
-                {conversation.title}
-            </h1>
+    if (isError || !data) {
+        return (
+            <div className="-m-8 flex min-h-0 flex-1 flex-col items-center justify-center">
+                <p className="text-sm text-muted-foreground">Gagal memuat percakapan.</p>
+            </div>
+        );
+    }
 
-            <CaptionGenerator
-                initialData={{
-                    id: conversation.id,
-                    imageUrl: conversation.imageUrl,
-                    style: conversation.style,
-                    caption: conversation.caption,
-                    hashtags: conversation.hashtags,
-                }}
-            />
+    return (
+        <div className="-m-8 flex min-h-0 flex-1 flex-col">
+            <ConversationView data={data} />
         </div>
     );
 }

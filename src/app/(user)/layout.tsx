@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
+import { useHistories } from "@/hooks/use-history";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import {
@@ -23,7 +24,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { BiLogOutCircle, BiPencil } from "react-icons/bi";
 import { TbLayoutSidebarRightCollapse, TbLayoutSidebarRightExpand, TbPencilPlus } from "react-icons/tb";
 
@@ -163,26 +164,7 @@ function PromptHistoryItem({
 
 function SidebarContent({ onClose }: { onClose?: () => void }) {
     const pathname = usePathname();
-    const [history, setHistory] = useState<{ id: string; title: string; createdAt: string }[]>([]);
-    const [loadingHistory, setLoadingHistory] = useState(true);
-
-    const fetchHistory = () => {
-        fetch("/api/history")
-            .then(res => res.json())
-            .then(data => {
-                if (data.histories) setHistory(data.histories);
-            })
-            .catch(err => console.error("Failed to fetch history:", err))
-            .finally(() => setLoadingHistory(false));
-    };
-
-    useEffect(() => {
-        fetchHistory();
-
-        const handleUpdate = () => fetchHistory();
-        window.addEventListener("historyUpdated", handleUpdate);
-        return () => window.removeEventListener("historyUpdated", handleUpdate);
-    }, []);
+    const { data: history = [], isPending, isError } = useHistories();
 
     return (
         <div className="flex h-full w-[260px] flex-col px-3">
@@ -234,8 +216,10 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                         Riwayat percakapan
                     </p>
                     <ul className="flex flex-col gap-1">
-                        {loadingHistory ? (
+                        {isPending ? (
                             <li className="px-2.5 py-2 text-xs text-muted-foreground">Memuat...</li>
+                        ) : isError ? (
+                            <li className="px-2.5 py-2 text-xs text-muted-foreground">Gagal memuat riwayat</li>
                         ) : history.length === 0 ? (
                             <li className="px-2.5 py-2 text-xs text-muted-foreground">Belum ada percakapan</li>
                         ) : (

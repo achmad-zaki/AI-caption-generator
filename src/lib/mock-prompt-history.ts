@@ -1,8 +1,6 @@
-export type PromptHistoryItem = {
-    id: string;
-    title: string;
-    createdAt: string;
-};
+import type { HistoryItem } from "@/lib/api/history";
+
+export type PromptHistoryItem = HistoryItem;
 
 export function formatHistoryDate(isoDate: string) {
     return new Intl.DateTimeFormat("en-GB", {

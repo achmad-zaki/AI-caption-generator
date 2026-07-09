@@ -1,7 +1,9 @@
 "use client";
 
+import { historyKeys } from "@/lib/query-keys";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuthDialogStore } from "@/stores/auth-dialog-store";
 import {
   RiAlertLine,
@@ -33,10 +35,11 @@ export type HistoryData = {
 
 export function CaptionGenerator({ initialData }: { initialData?: HistoryData }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { data: session } = authClient.useSession();
   const setAuthDialogOpen = useAuthDialogStore((state) => state.setOpen);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   // States
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [style, setStyle] = useState(initialData?.style ?? "");
@@ -44,12 +47,12 @@ export function CaptionGenerator({ initialData }: { initialData?: HistoryData })
   const [isDragging, setIsDragging] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [result, setResult] = useState<GenerateResult | null>(
     initialData ? { caption: initialData.caption, hashtags: initialData.hashtags } : null
   );
   const [copied, setCopied] = useState(false);
-  
+
   const [previewUrl, setPreviewUrl] = useState<string | null>(initialData?.imageUrl ?? null);
 
   useEffect(() => {
@@ -128,11 +131,10 @@ export function CaptionGenerator({ initialData }: { initialData?: HistoryData })
           ? { caption: content, hashtags: [] }
           : content
       );
-      
-      // Ganti URL ke halaman history tanpa full page reload
+
       if (data.historyId) {
         router.replace(`/dashboard/${data.historyId}`);
-        window.dispatchEvent(new Event("historyUpdated"));
+        await queryClient.invalidateQueries({ queryKey: historyKeys.lists() });
       }
     } catch {
       setError("Gagal terhubung ke server. Periksa koneksi Anda.");
