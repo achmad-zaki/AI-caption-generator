@@ -42,32 +42,6 @@ export default function DialogAuth() {
         }
     })
 
-    // async function handleEmailSignIn(event: React.SubmitEvent<HTMLFormElement>) {
-    //     event.preventDefault();
-    //     setIsEmailLoading(true);
-
-    //     await authClient.signIn.email(
-    //         {
-    //             email,
-    //             password,
-    //             callbackURL: "/",
-    //             rememberMe: true,
-    //         },
-    //         {
-    //             onSuccess: () => {
-    //                 setOpen(false);
-    //                 resetForm();
-    //             },
-    //             onError: (ctx) => {
-    //                 toast.error(ctx.error.statusText)
-    //             },
-    //             onResponse: () => {
-    //                 setIsEmailLoading(false);
-    //             },
-    //         }
-    //     );
-    // }
-
     const onSubmit = async (value: EmailSchemaForm) => {
         setIsLoadingEmail(true);
         try {
