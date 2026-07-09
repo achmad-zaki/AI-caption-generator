@@ -17,13 +17,15 @@ import {
     RiCloseLine,
     RiDeleteBinLine,
     RiMore2Fill,
-    RiSearchLine
+    RiSearchLine,
+    RiSettingsLine,
+    RiUserLine
 } from "@remixicon/react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { BiPencil } from "react-icons/bi";
+import { BiLogOutCircle, BiPencil } from "react-icons/bi";
 import { TbLayoutSidebarRightCollapse, TbLayoutSidebarRightExpand, TbPencilPlus } from "react-icons/tb";
 
 const navItems = [
@@ -33,6 +35,7 @@ const navItems = [
 
 function SidebarAccount() {
     const { data: session, isPending } = authClient.useSession();
+    const router = useRouter();
 
     if (isPending) {
         return (
@@ -59,19 +62,46 @@ function SidebarAccount() {
             .slice(0, 2)
             .toUpperCase() ?? "U";
 
+    const handleSignOut = async () => {
+        await authClient.signOut();
+        router.push("/");
+    };
+
     return (
-        <div className="flex items-center gap-3 px-3 py-3">
-            <Avatar size="sm">
-                <AvatarImage src={user.image ?? undefined} alt={user.name} />
-                <AvatarFallback>{initials}</AvatarFallback>
-            </Avatar>
-            <div className="min-w-0 flex-1">
-                {user.name && (
-                    <p className="truncate text-sm font-medium">{user.name}</p>
-                )}
-                <p className="truncate text-xs text-muted-foreground">{user.email}</p>
-            </div>
-        </div>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-sidebar-accent focus-visible:outline-none">
+                    <Avatar size="lg">
+                        <AvatarImage src={user.image ?? undefined} alt={user.name} />
+                        <AvatarFallback>{initials}</AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                        {user.name && (
+                            <p className="truncate text-sm font-medium">{user.name}</p>
+                        )}
+                        <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+                    </div>
+                </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" side="top" className="w-(--radix-dropdown-menu-trigger-width)">
+                <DropdownMenuItem asChild className="py-2">
+                    <Link href="/dashboard/profile">
+                        <RiUserLine className="size-4" />
+                        Profil
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="py-2">
+                    <Link href="/dashboard/settings">
+                        <RiSettingsLine className="size-4" />
+                        Pengaturan
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem variant="destructive" onClick={handleSignOut} className="py-2">
+                    <BiLogOutCircle className="size-4" />
+                    Keluar
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 }
 
@@ -136,8 +166,8 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
     const pathname = usePathname();
 
     return (
-        <div className="flex h-full w-[260px] flex-col">
-            <div className="flex h-12 shrink-0 items-center justify-between gap-2 px-3">
+        <div className="flex h-full w-[260px] flex-col px-3">
+            <div className="flex h-12 shrink-0 items-center justify-between gap-2">
                 <Link href="/" className="flex min-w-0 items-center gap-1.5" onClick={onClose}>
                     <Image
                         src="/images/logo.svg"
@@ -163,7 +193,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                 )}
             </div>
 
-            <nav className="flex shrink-0 flex-col gap-0.5 px-2 py-2">
+            <nav className="flex shrink-0 flex-col gap-0.5 py-2">
                 {navItems.map((item) => (
                     <Link
                         key={item.label}
@@ -179,7 +209,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
 
             <Separator />
 
-            <div className="flex min-h-0 flex-1 flex-col pl-2 pr-4 py-2 overflow-y-auto scroll-fade">
+            <div className="flex min-h-0 flex-1 flex-col py-2 overflow-y-auto scroll-fade">
                 <div className="mt-0.5 flex-1">
                     <p className="px-2.5 py-1.5 text-xs font-medium text-muted-foreground">
                         Riwayat percakapan
@@ -200,7 +230,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
 
             <Separator />
 
-            <div className="shrink-0">
+            <div className="shrink-0 py-3">
                 <SidebarAccount />
             </div>
         </div>
@@ -229,7 +259,7 @@ export default function UserDashboardLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     return (
         <div className="flex h-svh">

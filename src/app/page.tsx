@@ -7,8 +7,8 @@ import { Navbar } from "@/components/landing/navbar";
 import { Showcase } from "@/components/landing/showcase";
 import { Stats } from "@/components/landing/stats";
 import { auth } from "@/lib/auth";
-import Link from "next/link";
 import { headers } from "next/headers";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 function CTA() {
