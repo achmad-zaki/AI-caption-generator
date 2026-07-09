@@ -3,7 +3,7 @@
 import { useZodForm } from "@/hooks/use-zod-form";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Controller } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -19,21 +19,8 @@ const codeVerificationSchema = z.object({
 
 type CodeVerificationSchemaForm = z.infer<typeof codeVerificationSchema>;
 
-const RESEND_COOLDOWN_SECONDS = 60;
-
 export default function VerifyEmailForm({ email }: { email?: string }) {
     const [isResending, setIsResending] = useState(false);
-    const [resendCooldown, setResendCooldown] = useState(RESEND_COOLDOWN_SECONDS);
-
-    useEffect(() => {
-        if (resendCooldown <= 0) return;
-
-        const interval = setInterval(() => {
-            setResendCooldown((prev) => (prev <= 1 ? 0 : prev - 1));
-        }, 1000);
-
-        return () => clearInterval(interval);
-    }, [resendCooldown]);
 
     const form = useZodForm<CodeVerificationSchemaForm>({
         schema: codeVerificationSchema,
@@ -52,8 +39,6 @@ export default function VerifyEmailForm({ email }: { email?: string }) {
             return;
         }
 
-        if (resendCooldown > 0) return;
-
         setIsResending(true);
         try {
             const { data, error } = await authClient.emailOtp.sendVerificationOtp({
@@ -68,7 +53,6 @@ export default function VerifyEmailForm({ email }: { email?: string }) {
 
             if (data.success) {
                 toast.success("Kode verifikasi berhasil dikirim ulang");
-                setResendCooldown(RESEND_COOLDOWN_SECONDS);
             }
         } finally {
             setIsResending(false);
@@ -112,15 +96,11 @@ export default function VerifyEmailForm({ email }: { email?: string }) {
                     variant="ghost"
                     size="lg"
                     className="h-11 w-full rounded-full hover:bg-transparent!"
-                    disabled={isResending || !email || resendCooldown > 0}
+                    disabled={isResending || !email}
                     onClick={resendEmail}
                 >
                     {isResending && <Spinner className="size-4" />}
-                    {isResending
-                        ? "Mengirim ulang kode..."
-                        : resendCooldown > 0
-                            ? `Kirim ulang dalam ${resendCooldown}s`
-                            : "Kirim ulang kode"}
+                    {isResending ? "Mengirim ulang kode..." : "Kirim ulang kode"}
                 </Button>
 
                 <div className="flex items-center gap-2 w-full">
