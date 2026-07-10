@@ -135,13 +135,6 @@ Jika gambar RELEVAN (menampilkan subjek/visual yang jelas dan cocok untuk feed):
       ],
     });
 
-    if (!result.output.isRelevant) {
-      return NextResponse.json(
-        { error: result.output.caption, code: "IMAGE_NOT_RELEVANT" },
-        { status: 400 }
-      );
-    }
-
     return NextResponse.json({ content: result.output }, { status: 200 });
   } catch (error) {
     console.log(error);
