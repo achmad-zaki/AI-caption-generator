@@ -3,58 +3,75 @@
 import { RiCloseLine, RiMenuLine } from "@remixicon/react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ThemeToggle } from "../theme-toggle";
 import { Button } from "../ui/button";
 
 const navLinks = [
-  { label: "Fitur", href: "#fitur" },
+  { label: "Generator", href: "#generator" },
   { label: "Cara Kerja", href: "#cara-kerja" },
-  { label: "Statistik", href: "#statistik" },
-  { label: "FAQ", href: "#faq" },
 ];
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target as Node)
+      ) {
+        setMobileOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [mobileOpen]);
 
   return (
-    <>
-      <header className="fixed top-0 z-50 w-full px-4 pt-4 md:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-6xl items-center justify-between rounded-full border border-border bg-background/70 px-4 py-3 shadow-lg backdrop-blur-md md:px-6">
-          <Link href="/">
-            <div className="flex items-center gap-1.5">
-              <Image
-                src="/images/logo.svg"
-                alt="Logo"
-                width={100}
-                height={100}
-                className="h-auto w-6"
-              />
-              <span className="text-lg font-semibold tracking-tight text-foreground">
-                Caption<span className="text-primary">AI</span>
-              </span>
-            </div>
-          </Link>
-
-          <nav className="hidden items-center gap-8 md:flex">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-
+    <header className="fixed top-0 z-50 w-full px-4 pt-4 md:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-6xl items-center justify-between rounded-full border border-border bg-background/70 px-4 py-3 shadow-lg backdrop-blur-md md:px-6">
+        <Link href="/">
           <div className="flex items-center gap-1.5">
-            <ThemeToggle />
+            <Image
+              src="/images/logo.svg"
+              alt="Logo"
+              width={100}
+              height={100}
+              className="h-auto w-6"
+            />
+            <span className="text-lg font-semibold tracking-tight text-foreground">
+              Caption<span className="text-primary">AI</span>
+            </span>
+          </div>
+        </Link>
 
+        <nav className="hidden items-center gap-8 md:flex">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="flex items-center gap-1.5">
+          <ThemeToggle />
+
+          <div ref={menuRef} className="relative md:hidden">
             <Button
               size="icon-lg"
               variant="outline"
-              className="md:hidden rounded-full"
+              className="rounded-full"
+              aria-expanded={mobileOpen}
+              aria-haspopup="menu"
               onClick={() => setMobileOpen((prev) => !prev)}
             >
               {mobileOpen ? (
@@ -63,42 +80,28 @@ export function Navbar() {
                 <RiMenuLine className="size-4" />
               )}
             </Button>
+
+            {mobileOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 top-full mt-2 min-w-44 rounded-xl border border-border bg-background p-1.5 shadow-lg"
+              >
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    role="menuitem"
+                    className="block rounded-lg px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         </div>
-      </header>
-
-      {mobileOpen && (
-        <>
-          <button
-            type="button"
-            aria-label="Tutup menu"
-            className="fixed inset-0 z-40 bg-foreground/20 backdrop-blur-[2px] md:hidden"
-            onClick={() => setMobileOpen(false)}
-          />
-
-          <div className="fixed inset-x-4 top-21 z-50 rounded-2xl border border-border bg-background/95 p-4 shadow-xl backdrop-blur-md md:hidden">
-            <nav className="flex flex-col gap-1">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="rounded-xl px-4 py-3 text-sm text-foreground transition-colors hover:bg-muted"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <Link
-                href="#generator"
-                className="mt-1 rounded-full border border-foreground px-4 py-3 text-center text-sm font-medium text-foreground transition-colors hover:bg-muted"
-                onClick={() => setMobileOpen(false)}
-              >
-                Mulai gratis
-              </Link>
-            </nav>
-          </div>
-        </>
-      )}
-    </>
+      </div>
+    </header>
   );
 }

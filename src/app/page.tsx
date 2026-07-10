@@ -2,7 +2,6 @@ import { FeaturesIntro } from "@/components/landing/features-intro";
 import { Footer } from "@/components/landing/footer";
 import { Hero } from "@/components/landing/hero";
 import { Navbar } from "@/components/landing/navbar";
-import { Showcase } from "@/components/landing/showcase";
 import Link from "next/link";
 
 function CTA() {
@@ -42,7 +41,6 @@ export default function Home() {
       <main className="flex-1">
         <Hero />
         <FeaturesIntro />
-        <Showcase />
       </main>
       <Footer />
     </div>
