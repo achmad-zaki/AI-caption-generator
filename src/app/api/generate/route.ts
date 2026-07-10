@@ -18,7 +18,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { imageBase64, style } = await request.json();
+    const { imageBase64, style, additionalText } = await request.json();
 
     if (!imageBase64) {
       return NextResponse.json({ error: "Gambar tidak ditemukan" }, { status: 400 });
@@ -112,10 +112,18 @@ Jika gambar RELEVAN (menampilkan subjek/visual yang jelas dan cocok untuk feed):
           content: [
             {
               type: "text",
-              text:
-                typeof style === "string" && style.trim().length > 0
-                  ? `Buat caption Instagram terbaik berdasarkan gambar ini. Gunakan gaya penulisan berikut: "${style.trim()}".`
-                  : "Buat caption Instagram terbaik berdasarkan gambar ini.",
+              text: (() => {
+                const hasStyle = typeof style === "string" && style.trim().length > 0;
+                const hasContext = typeof additionalText === "string" && additionalText.trim().length > 0;
+                let prompt = "Buat caption Instagram terbaik berdasarkan gambar ini.";
+                if (hasContext) {
+                  prompt += `\n\nKonteks tambahan tentang gambar: "${additionalText.trim()}"`;
+                }
+                if (hasStyle) {
+                  prompt += `\n\nGunakan gaya penulisan berikut: "${style.trim()}".`;
+                }
+                return prompt;
+              })(),
             },
             {
               type: "file",

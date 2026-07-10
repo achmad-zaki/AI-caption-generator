@@ -11,6 +11,7 @@ import { BiAddToQueue } from "react-icons/bi";
 import { BsArrowRightShort } from "react-icons/bs";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Button } from "./ui/button";
+import { Input } from "./ui/input";
 import { Spinner } from "./ui/spinner";
 import { Textarea } from "./ui/textarea";
 
@@ -22,9 +23,20 @@ export type GenerateResult = {
 export function CaptionGenerator() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const STYLE_PRESETS = [
+    { label: "Casual", value: "casual dan santai" },
+    { label: "Lucu", value: "lucu dan humoris" },
+    { label: "Inspiratif", value: "inspiratif dan memotivasi" },
+    { label: "Profesional", value: "profesional dan formal" },
+    { label: "Storytelling", value: "storytelling yang mengalir" },
+    { label: "Promosi", value: "promosi produk yang menarik" },
+  ];
+
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [style, setStyle] = useState("");
-  const [showStyleInput, setShowStyleInput] = useState(false);
+  const [selectedStyle, setSelectedStyle] = useState("");
+  const [customStyle, setCustomStyle] = useState("");
+  const [additionalText, setAdditionalText] = useState("");
+  const [showOptions, setShowOptions] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +56,8 @@ export function CaptionGenerator() {
     setError(null);
     setResult(null);
   }, []);
+
+  const combinedStyle = [selectedStyle, customStyle.trim()].filter(Boolean).join(", ");
 
   const onDrop = useCallback(
     (e: React.DragEvent) => {
@@ -82,7 +96,8 @@ export function CaptionGenerator() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           imageBase64,
-          ...(style.trim() && { style: style.trim() }),
+          ...(combinedStyle && { style: combinedStyle }),
+          ...(additionalText.trim() && { additionalText: additionalText.trim() }),
         }),
       });
 
@@ -138,7 +153,7 @@ export function CaptionGenerator() {
               "relative flex min-h-[220px] cursor-pointer flex-col items-center justify-center gap-4 overflow-hidden px-6 py-12 transition-colors md:min-h-[260px]",
               "rounded-2xl border border-dashed bg-muted/40",
               "border-zinc-400 dark:border-zinc-700",
-              !previewUrl && "hover:border-primary hover:bg-primary/10",
+              !previewUrl && "hover:bg-muted",
               isDragging && "bg-muted/70"
             )}
           >
@@ -178,16 +193,53 @@ export function CaptionGenerator() {
           </div>
 
           <div className="flex flex-col gap-3 mt-3">
-            {showStyleInput && (
-              <div>
-                <Textarea
-                  rows={3}
-                  autoFocus
-                  placeholder="Contoh: casual, lucu, profesional, storytelling..."
-                  value={style}
-                  onChange={(e) => setStyle(e.target.value)}
-                  className="placeholder:text-sm text-sm"
-                />
+            {showOptions && (
+              <div className="flex flex-col gap-3 rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700 bg-muted/30 p-3">
+                <div>
+                  <p className="mb-2 text-[11px] font-medium text-muted-foreground">Gaya penulisan</p>
+                  <div className="flex flex-wrap gap-1">
+                    {STYLE_PRESETS.map((preset) => (
+                      <button
+                        key={preset.value}
+                        type="button"
+                        onClick={() =>
+                          setSelectedStyle((prev) =>
+                            prev === preset.value ? "" : preset.value
+                          )
+                        }
+                        className={cn(
+                          "rounded-full border px-3 py-1 text-[11px] font-medium transition-colors",
+                          selectedStyle === preset.value
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-border bg-background text-foreground hover:bg-muted"
+                        )}
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                  <Input
+                    type="text"
+                    placeholder="Atau tulis gaya sendiri, contoh: puitis, minimalis..."
+                    value={customStyle}
+                    onChange={(e) => setCustomStyle(e.target.value)}
+                    disabled={!!selectedStyle}
+                    className={cn(
+                      "mt-2 transition-opacity",
+                      selectedStyle && "cursor-not-allowed opacity-40"
+                    )}
+                  />
+                </div>
+                <div>
+                  <p className="mb-2 text-[11px] font-medium text-muted-foreground">Konteks tambahan <span className="font-normal">(opsional)</span></p>
+                  <Textarea
+                    rows={2}
+                    placeholder="Contoh: foto produk baru kami, liburan ke Bali, acara ulang tahun sahabat..."
+                    value={additionalText}
+                    onChange={(e) => setAdditionalText(e.target.value)}
+                    className="placeholder:text-xs text-xs"
+                  />
+                </div>
               </div>
             )}
 
@@ -196,11 +248,14 @@ export function CaptionGenerator() {
                 size="sm"
                 variant="secondary"
                 type="button"
-                onClick={() => setShowStyleInput((prev) => !prev)}
-                className="rounded-full text-[10px] py-3.5 border border-border"
+                onClick={() => setShowOptions((prev) => !prev)}
+                className={cn(
+                  "rounded-full text-[10px] py-3.5 border border-border",
+                  showOptions && "bg-muted"
+                )}
               >
                 <BiAddToQueue />
-                Tambah keterangan
+                {showOptions ? "Sembunyikan opsi" : "Tambah konteks"}
               </Button>
 
               <Button
