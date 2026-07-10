@@ -4,7 +4,8 @@ import { cn } from "@/lib/utils";
 import {
   RiAlertLine,
   RiCheckLine,
-  RiFileCopyLine
+  RiFileCopyLine,
+  RiRefreshLine,
 } from "@remixicon/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BiAddToQueue } from "react-icons/bi";
@@ -69,13 +70,13 @@ export function CaptionGenerator() {
     [handleFile]
   );
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  const generateCaption = useCallback(async () => {
     if (!imageFile) return;
 
     setLoading(true);
     setError(null);
     setResult(null);
+    setCopied(false);
 
     try {
       const imageBase64 = await new Promise<string>((resolve, reject) => {
@@ -119,6 +120,11 @@ export function CaptionGenerator() {
     } finally {
       setLoading(false);
     }
+  }, [imageFile, combinedStyle, additionalText]);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    await generateCaption();
   }
 
   async function copyToClipboard() {
@@ -132,7 +138,7 @@ export function CaptionGenerator() {
   return (
     <div id="generator" className="w-full scroll-mt-28">
       <form onSubmit={handleSubmit} className="mx-auto w-full max-w-2xl">
-        <div className="rounded-3xl border dark:border-zinc-800 border-zinc-300 bg-card shadow-2xl shadow-primary/20 p-3">
+        <div className="rounded-3xl border dark:border-zinc-800 border-zinc-300 bg-card shadow-[0_0_90px_rgba(0,0,0,0.8)] shadow-primary/30 p-3">
           <div
             role="button"
             tabIndex={0}
@@ -282,27 +288,72 @@ export function CaptionGenerator() {
         )}
       </form>
 
-      {result && (
+      {loading && (
+        <div
+          className="mx-auto mt-6 max-w-2xl rounded-3xl border border-border bg-card p-6 md:p-8"
+          aria-busy="true"
+          aria-label="Sedang membuat caption"
+        >
+          <div className="mb-4 flex items-center justify-between gap-4">
+            <div className="h-4 w-28 animate-pulse rounded-md bg-muted" />
+            <div className="h-8 w-20 animate-pulse rounded-full bg-muted" />
+          </div>
+
+          <div className="space-y-3">
+            <div className="h-4 w-full animate-pulse rounded-md bg-muted" />
+            <div className="h-4 w-[92%] animate-pulse rounded-md bg-muted" />
+            <div className="h-4 w-[85%] animate-pulse rounded-md bg-muted" />
+            <div className="h-4 w-full animate-pulse rounded-md bg-muted" />
+            <div className="h-4 w-[70%] animate-pulse rounded-md bg-muted" />
+            <div className="mt-2 h-4 w-full animate-pulse rounded-md bg-muted" />
+            <div className="h-4 w-[88%] animate-pulse rounded-md bg-muted" />
+            <div className="h-4 w-[60%] animate-pulse rounded-md bg-muted" />
+          </div>
+
+          <div className="mt-14 flex flex-wrap gap-2.5">
+            {[72, 96, 64, 88, 56, 80].map((width) => (
+              <div
+                key={width}
+                className="h-7 animate-pulse rounded-full bg-muted"
+                style={{ width }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {result && !loading && (
         <div className="mx-auto mt-6 max-w-2xl rounded-3xl border border-border bg-card p-6 md:p-8">
           <div className="mb-4 flex items-center justify-between gap-4">
             <h3 className="text-sm font-semibold text-foreground">Caption Anda</h3>
-            <button
-              type="button"
-              onClick={copyToClipboard}
-              className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
-            >
-              {copied ? (
-                <>
-                  <RiCheckLine className="size-3.5 text-green-600 dark:text-green-400" />
-                  Tersalin
-                </>
-              ) : (
-                <>
-                  <RiFileCopyLine className="size-3.5" />
-                  Salin
-                </>
-              )}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={generateCaption}
+                disabled={!imageFile || loading}
+                className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
+              >
+                <RiRefreshLine className="size-3.5" />
+                Generate ulang
+              </button>
+              <button
+                type="button"
+                onClick={copyToClipboard}
+                className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+              >
+                {copied ? (
+                  <>
+                    <RiCheckLine className="size-3.5 text-green-600 dark:text-green-400" />
+                    Tersalin
+                  </>
+                ) : (
+                  <>
+                    <RiFileCopyLine className="size-3.5" />
+                    Salin
+                  </>
+                )}
+              </button>
+            </div>
           </div>
 
           <div className="space-y-4 text-sm leading-relaxed text-foreground/80 md:text-base">
