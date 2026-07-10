@@ -1,10 +1,6 @@
 "use client";
 
-import { historyKeys } from "@/lib/query-keys";
-import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
-import { useQueryClient } from "@tanstack/react-query";
-import { useAuthDialogStore } from "@/stores/auth-dialog-store";
 import {
   RiAlertLine,
   RiCheckLine,
@@ -18,42 +14,23 @@ import { Button } from "./ui/button";
 import { Spinner } from "./ui/spinner";
 import { Textarea } from "./ui/textarea";
 
-import { useRouter } from "next/navigation";
-
 export type GenerateResult = {
   caption: string;
   hashtags: string[];
 };
 
-export type HistoryData = {
-  id: string;
-  imageUrl: string;
-  style: string | null;
-  caption: string;
-  hashtags: string[];
-};
-
-export function CaptionGenerator({ initialData }: { initialData?: HistoryData }) {
-  const router = useRouter();
-  const queryClient = useQueryClient();
-  const { data: session } = authClient.useSession();
-  const setAuthDialogOpen = useAuthDialogStore((state) => state.setOpen);
+export function CaptionGenerator() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // States
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [style, setStyle] = useState(initialData?.style ?? "");
-  const [showStyleInput, setShowStyleInput] = useState(!!initialData?.style);
+  const [style, setStyle] = useState("");
+  const [showStyleInput, setShowStyleInput] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const [result, setResult] = useState<GenerateResult | null>(
-    initialData ? { caption: initialData.caption, hashtags: initialData.hashtags } : null
-  );
+  const [result, setResult] = useState<GenerateResult | null>(null);
   const [copied, setCopied] = useState(false);
-
-  const [previewUrl, setPreviewUrl] = useState<string | null>(initialData?.imageUrl ?? null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (!imageFile) return;
@@ -81,11 +58,6 @@ export function CaptionGenerator({ initialData }: { initialData?: HistoryData })
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!imageFile) return;
-
-    if (!session) {
-      setAuthDialogOpen(true);
-      return;
-    }
 
     setLoading(true);
     setError(null);
@@ -117,10 +89,6 @@ export function CaptionGenerator({ initialData }: { initialData?: HistoryData })
       const data = await res.json();
 
       if (!res.ok) {
-        if (res.status === 401) {
-          setAuthDialogOpen(true);
-          return;
-        }
         setError(data.error ?? "Terjadi kesalahan. Coba lagi.");
         return;
       }
@@ -131,11 +99,6 @@ export function CaptionGenerator({ initialData }: { initialData?: HistoryData })
           ? { caption: content, hashtags: [] }
           : content
       );
-
-      if (data.historyId) {
-        router.replace(`/dashboard/${data.historyId}`);
-        await queryClient.invalidateQueries({ queryKey: historyKeys.lists() });
-      }
     } catch {
       setError("Gagal terhubung ke server. Periksa koneksi Anda.");
     } finally {

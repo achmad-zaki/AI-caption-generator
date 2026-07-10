@@ -1,4 +1,3 @@
-import { QueryProvider } from "@/components/providers/query-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -37,14 +36,12 @@ export default function RootLayout({
       className={cn("h-full", "antialiased", geistMono.variable, "font-sans", geist.variable, instrumentSerifHeading.variable)}
     >
       <body className="min-h-full flex flex-col">
-        <QueryProvider>
-          <ThemeProvider>
-            <TooltipProvider>
-              {children}
-            </TooltipProvider>
-            <Toaster richColors position="top-center" />
-          </ThemeProvider>
-        </QueryProvider>
+        <ThemeProvider>
+          <TooltipProvider>
+            {children}
+          </TooltipProvider>
+          <Toaster richColors position="top-center" />
+        </ThemeProvider>
       </body>
     </html>
   );

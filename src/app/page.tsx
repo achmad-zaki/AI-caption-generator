@@ -6,10 +6,7 @@ import { Hero } from "@/components/landing/hero";
 import { Navbar } from "@/components/landing/navbar";
 import { Showcase } from "@/components/landing/showcase";
 import { Stats } from "@/components/landing/stats";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 function CTA() {
   return (
@@ -19,7 +16,7 @@ function CTA() {
           Mulai buat caption sekarang
         </h2>
         <p className="mx-auto mt-4 max-w-lg text-sm text-muted-foreground md:text-base">
-          Gratis dan tidak perlu mendaftar. Cukup ketik topik Anda dan dapatkan caption
+          Gratis dan tidak perlu mendaftar. Cukup unggah gambar Anda dan dapatkan caption
           siap posting dalam hitungan detik.
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -41,13 +38,7 @@ function CTA() {
   );
 }
 
-export default async function Home() {
-  const session = await auth.api.getSession({ headers: await headers() });
-
-  if (session) {
-    redirect("/dashboard");
-  }
-
+export default function Home() {
   return (
     <div className="flex min-h-full flex-col bg-background">
       <Navbar />

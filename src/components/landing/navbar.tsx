@@ -1,14 +1,11 @@
 "use client";
 
-import { authClient } from "@/lib/auth-client";
 import { RiCloseLine, RiMenuLine } from "@remixicon/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import DialogAuth from "../dialog-auth";
 import { ThemeToggle } from "../theme-toggle";
-import { Button, buttonVariants } from "../ui/button";
-import { UserMenu } from "../user-menu";
+import { Button } from "../ui/button";
 
 const navLinks = [
   { label: "Fitur", href: "#fitur" },
@@ -19,13 +16,11 @@ const navLinks = [
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { data: session } = authClient.useSession();
 
   return (
     <>
       <header className="fixed top-0 z-50 w-full px-4 pt-4 md:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-6xl items-center justify-between rounded-full border border-border
-         bg-background/70 px-4 py-3 shadow-lg backdrop-blur-md md:px-6">
+        <div className="mx-auto flex max-w-6xl items-center justify-between rounded-full border border-border bg-background/70 px-4 py-3 shadow-lg backdrop-blur-md md:px-6">
           <Link href="/">
             <div className="flex items-center gap-1.5">
               <Image
@@ -55,8 +50,6 @@ export function Navbar() {
 
           <div className="flex items-center gap-1.5">
             <ThemeToggle />
-
-            <UserMenu />
 
             <Button
               size="icon-lg"
@@ -102,24 +95,6 @@ export function Navbar() {
               >
                 Mulai gratis
               </Link>
-              {!session && (
-                <div className="mt-2" onClick={() => setMobileOpen(false)}>
-                  <DialogAuth />
-                </div>
-              )}
-              {(session?.user as any)?.role === "SUPERADMIN" && (
-                <Link
-                  href="/admin"
-                  className={buttonVariants({
-                    variant: "outline",
-                    size: "sm",
-                    className: "mt-2 w-full rounded-full",
-                  })}
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Panel Admin
-                </Link>
-              )}
             </nav>
           </div>
         </>

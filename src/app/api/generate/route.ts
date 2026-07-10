@@ -1,8 +1,5 @@
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import { google } from "@ai-sdk/google";
 import { generateText, Output } from "ai";
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -14,14 +11,6 @@ const captionSchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session) {
-      return NextResponse.json({ error: "Anda harus masuk terlebih dahulu" }, { status: 401 });
-    }
-
     if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
       return NextResponse.json(
         { error: "Google Generative AI API key not configured." },
@@ -145,20 +134,7 @@ Jika gambar RELEVAN (menampilkan subjek/visual yang jelas dan cocok untuk feed):
       );
     }
 
-    const title = result.output.caption.split(/\s+/).slice(0, 5).join(" ") + "...";
-
-    const history = await prisma.history.create({
-      data: {
-        userId: session.user.id,
-        title,
-        imageUrl: imageBase64,
-        style: typeof style === "string" ? style.trim() : null,
-        caption: result.output.caption,
-        hashtags: result.output.hashtags,
-      },
-    });
-
-    return NextResponse.json({ content: result.output, historyId: history.id }, { status: 200 });
+    return NextResponse.json({ content: result.output }, { status: 200 });
   } catch (error) {
     console.log(error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
